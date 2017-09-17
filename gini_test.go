@@ -2,22 +2,38 @@ package gini
 
 import (
 	"testing"
+	"encoding/json"
+	"log"
 )
 
-func TestGini(t *testing.T) {
-	config, _ := Parse("test.ini")
-	value := config.Get("mysql", "username")
-
-	if value != "mysql" {
-		t.Errorf("Failed: expected %s, got %s", "mysql", value)
-	}
+type Section struct {
+	name string
+	values map[string]string
 }
 
-func TestGlobal(t *testing.T) {
-	config, _ := Parse("test.ini")
-	value := config.Get("", "foo")
+func TestGini(t *testing.T) {
+	src := `
 
-	if value != "bar" {
-		t.Errorf("Failed: expected %s, got %s", "bar", value)
+	foo=bar
+
+	[user]
+	username=john
+	pass=secret
+	socket=~/path/to/keyfile
+
+	[redis]
+	host=localhost
+	port=:8080
+
+	`
+
+	gini := Parse("test.ini")
+	prettyJson, err := json.MarshalIndent(gini, "", " ")
+
+	if err != nil {
+		log.Println("Error marshalling JSON:", err.Error())
+		return 
 	}
+
+	log.Println(string(prettyJson))
 }
