@@ -27,7 +27,7 @@ func TestGini(t *testing.T) {
 
 	`
 
-	gini := Parse("test.ini")
+	gini := DecodeFile("test.ini")
 	prettyJson, err := json.MarshalIndent(gini, "", " ")
 
 	if err != nil {

@@ -19,3 +19,6 @@ func Parse(src string) string {
 	return src
 }
 
+func (gini *Gini) Parse() {
+}
+
