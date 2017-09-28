@@ -37,12 +37,12 @@ func lex(input string) *Lexer {
 	return &Lexer{
 		Input: input,
 		Line: 1,
-		State: LexTop,
+		State: lexTop,
 		Tokens: make(chan Token, 10),
 	}
 }
 
-func (lxr *Lexer) Next() Token {
+func (lxr *Lexer) nextToken() Token {
 	for {
 		select {
 		case token := <-lxr.Tokens:
@@ -100,8 +100,13 @@ func (lxr *Lexer) ErrorF(format string, args ...interface{}) StateFn {
 	return nil
 }
 
-func LexTop(lxr *Lexer) StateFn {
-	isWhitespace()
+func lexTop(lxr *Lexer) StateFn {
+	char := lxr.next()
+	if isWhitespace(char) || isNewline(char) {
+		return lexSkip(lxr, lexTop)
+	}
+
+	switch
 
 	if strings.HasPrefix(InputToEnd(), leftBracket) {
 		return LexLeftBracket
@@ -138,7 +143,7 @@ func LexLeftBracket(lxr *Lexer) StateFn {
 func LexRightBracket(lxr *Lexer) StateFn {
 	lxr.Pos += len(rightBracket)
 	lxr.Emit(tokeRightBracket)
-	return LexBegin
+	return lexTop
 }
 
 func LexSection(lxr *Lexer) StateFn {
@@ -158,7 +163,7 @@ func LexValue(lxr *Lexer) StateFn {
 	for {
 		if strings.HasPrefix(InputToEnd(), newline) {
 			lxr.Emit(tokenValue)
-			return LexBegin
+			return lexTop
 		}
 		lxr.Inc()
 		if lxr.IsEOF() {
@@ -167,7 +172,11 @@ func LexValue(lxr *Lexer) StateFn {
 	}
 }
 
-func isWhitespace(t rune) bool {
-	return t == ' ' || t == '\t'
+func isWhitespace(char rune) bool {
+	return char == ' ' || char == '\t'
+}
+
+func isNewline(char rune) bool {
+	return char == '\n' || char == '\r'
 }
 
